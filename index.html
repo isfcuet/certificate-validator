@@ -52,7 +52,7 @@
     if (certificateId) {
       const apiKey = 'AIzaSyBMfH_l-UGYbAn_uj_kl_WC4FFiZeylTss';
       const spreadsheetId = '1hFNqSGABxr6NAVa7eZuyWHIOv_GZzXw4OszGIWtcvpc';
-      const range = 'Sheet1!A2:D';
+      const range = 'Sheet1!A2:F';
       const sheetUrl = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}?key=${apiKey}`;
 
       fetch(sheetUrl)
@@ -75,6 +75,8 @@
               <div class="valid">
                 ✅ Certificate ID: <strong>${certData[0]}</strong><br>
                 Name: <strong>${certData[1]}</strong><br>
+                Designation: <strong>${certData[4]}</strong><br>
+                Session: <strong>${certData[5]}</strong><br>
                 Issue Date: <strong>${certData[2]}</strong>
               </div>`;
           } else {
