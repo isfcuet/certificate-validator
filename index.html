@@ -34,9 +34,9 @@
 
       if (certificateId) {
         // Make an API request to Google Sheets to get certificate data
-        const apiKey = "your_google_api_key";
-        const spreadsheetId = "your_spreadsheet_id";
-        const range = `Sheet1!A2:E`; // The range where certificate data is stored
+        const apiKey = "AIzaSyBMfH_l-UGYbAn_uj_kl_WC4FFiZeylTss";
+        const spreadsheetId = "1hFNqSGABxr6NAVa7eZuyWHIOv_GZzXw4OszGIWtcvpc";
+        const range = `Sheet1!A2:D`; // The range where certificate data is stored
 
         const sheetUrl = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}?key=${apiKey}`;
 
@@ -52,12 +52,7 @@
               if (row[0] === certificateId) {
                 // Assuming Certificate ID is in column A
                 certificate = row;
-                const expiryDate = new Date(row[3]); // Assuming Expiry Date is in column D
-                const currentDate = new Date();
-
-                if (expiryDate > currentDate) {
-                  isValid = true;
-                }
+                isValid = true;
               }
             });
 
