@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Certificate Validator</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        padding: 50px;
+      }
+      .result {
+        font-size: 20px;
+        margin-top: 20px;
+      }
+      .valid {
+        color: green;
+      }
+      .invalid {
+        color: red;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Certificate Validator</h1>
+    <p>Scanning the QR Code...</p>
+    <div id="result" class="result"></div>
+
+    <script>
+      // Get the certificate ID from the URL query parameter
+      const urlParams = new URLSearchParams(window.location.search);
+      const certificateId = urlParams.get("certificate_id");
+
+      if (certificateId) {
+        // Make an API request to Google Sheets to get certificate data
+        const apiKey = "your_google_api_key";
+        const spreadsheetId = "your_spreadsheet_id";
+        const range = `Sheet1!A2:E`; // The range where certificate data is stored
+
+        const sheetUrl = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}?key=${apiKey}`;
+
+        fetch(sheetUrl)
+          .then((response) => response.json())
+          .then((data) => {
+            // Check the data for the matching certificate ID
+            const rows = data.values;
+            let isValid = false;
+            let certificate = null;
+
+            rows.forEach((row) => {
+              if (row[0] === certificateId) {
+                // Assuming Certificate ID is in column A
+                certificate = row;
+                const expiryDate = new Date(row[3]); // Assuming Expiry Date is in column D
+                const currentDate = new Date();
+
+                if (expiryDate > currentDate) {
+                  isValid = true;
+                }
+              }
+            });
+
+            // Show the result on the webpage
+            const resultElement = document.getElementById("result");
+            if (certificate) {
+              if (isValid) {
+                resultElement.innerHTML = `<p class="valid">Certificate ID: ${certificate[0]} is valid!</p>`;
+              } else {
+                resultElement.innerHTML = `<p class="invalid">Certificate ID: ${certificate[0]} has expired!</p>`;
+              }
+            } else {
+              resultElement.innerHTML = `<p class="invalid">Certificate ID: ${certificateId} not found!</p>`;
+            }
+          })
+          .catch((error) => {
+            console.error("Error fetching certificate data:", error);
+            document.getElementById("result").innerHTML =
+              '<p class="invalid">Error occurred while validating the certificate!</p>';
+          });
+      } else {
+        document.getElementById("result").innerHTML =
+          '<p class="invalid">No certificate ID provided!</p>';
+      }
+    </script>
+  </body>
+</html>
