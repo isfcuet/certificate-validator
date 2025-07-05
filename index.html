@@ -1,82 +1,93 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Certificate Validator</title>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        text-align: center;
-        padding: 50px;
-      }
-      .result {
-        font-size: 20px;
-        margin-top: 20px;
-      }
-      .valid {
-        color: green;
-      }
-      .invalid {
-        color: red;
-      }
-    </style>
-  </head>
-  <body>
-    <h1>Certificate Validator</h1>
-    <p>Scanning the QR Code...</p>
-    <div id="result" class="result"></div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Certificate Validator – Indigenous Student Forum, CUET</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 50px;
+      background-color: #f9f9f9;
+    }
+    .logo {
+      width: 120px;
+      height: auto;
+      margin-bottom: 20px;
+    }
+    h1 {
+      font-size: 28px;
+      color: #333;
+    }
+    .result {
+      font-size: 20px;
+      margin-top: 30px;
+    }
+    .valid {
+      color: green;
+      font-weight: bold;
+    }
+    .invalid {
+      color: red;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <!-- LOGO -->
+  <img src="isf.png" alt="Indigenous Student Forum, CUET" class="logo" />
 
-    <script>
-      // Get the certificate ID from the URL query parameter
-      const urlParams = new URLSearchParams(window.location.search);
-      const certificateId = urlParams.get("certificate_id");
+  <h1>Certificate Validator</h1>
+  <p>Scan the QR code and you will be redirected here for validation.</p>
 
-      if (certificateId) {
-        // Make an API request to Google Sheets to get certificate data
-        const apiKey = "AIzaSyBMfH_l-UGYbAn_uj_kl_WC4FFiZeylTss";
-        const spreadsheetId = "1hFNqSGABxr6NAVa7eZuyWHIOv_GZzXw4OszGIWtcvpc";
-        const range = `Sheet1!A2:D`; // The range where certificate data is stored
+  <div id="result" class="result">Checking certificate...</div>
 
-        const sheetUrl = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}?key=${apiKey}`;
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const certificateId = params.get('certificate_id');
 
-        fetch(sheetUrl)
-          .then((response) => response.json())
-          .then((data) => {
-            // Check the data for the matching certificate ID
-            const rows = data.values;
-            let isValid = false;
-            let certificate = null;
+    if (certificateId) {
+      const apiKey = 'AIzaSyBMfH_l-UGYbAn_uj_kl_WC4FFiZeylTss';
+      const spreadsheetId = '1hFNqSGABxr6NAVa7eZuyWHIOv_GZzXw4OszGIWtcvpc';
+      const range = 'Sheet1!A2:D';
+      const sheetUrl = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}?key=${apiKey}`;
 
-            rows.forEach((row) => {
-              if (row[0] === certificateId) {
-                // Assuming Certificate ID is in column A
-                certificate = row;
-                isValid = true;
-              }
-            });
+      fetch(sheetUrl)
+        .then(res => res.json())
+        .then(data => {
+          const rows = data.values || [];
+          let found = false;
+          let certData = null;
 
-            // Show the result on the webpage
-            const resultElement = document.getElementById("result");
-            if (certificate) {
-              if (isValid) {
-                resultElement.innerHTML = `<p class="valid">Certificate ID: ${certificate[0]} is valid!</p>`;
-              } else {
-                resultElement.innerHTML = `<p class="invalid">Certificate ID: ${certificate[0]} has expired!</p>`;
-              }
-            } else {
-              resultElement.innerHTML = `<p class="invalid">Certificate ID: ${certificateId} not found!</p>`;
+          rows.forEach(row => {
+            if (row[0] === certificateId) {
+              found = true;
+              certData = row;
             }
-          })
-          .catch((error) => {
-            console.error("Error fetching certificate data:", error);
-            document.getElementById("result").innerHTML =
-              '<p class="invalid">Error occurred while validating the certificate!</p>';
           });
-      } else {
-        document.getElementById("result").innerHTML =
-          '<p class="invalid">No certificate ID provided!</p>';
-      }
-    </script>
-  </body>
+
+          const result = document.getElementById('result');
+          if (found) {
+            result.innerHTML = `
+              <div class="valid">
+                ✅ Certificate ID: <strong>${certData[0]}</strong><br>
+                Name: <strong>${certData[1]}</strong><br>
+                Issue Date: <strong>${certData[2]}</strong>
+              </div>`;
+          } else {
+            result.innerHTML = `<div class="invalid">❌ Certificate ID ${certificateId} not found.</div>`;
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          document.getElementById('result').innerHTML =
+            '<div class="invalid">❌ Error verifying certificate.</div>';
+        });
+    } else {
+      document.getElementById('result').innerHTML =
+        '<div class="invalid">❌ No certificate ID provided in the URL.</div>';
+    }
+  </script>
+</body>
 </html>
